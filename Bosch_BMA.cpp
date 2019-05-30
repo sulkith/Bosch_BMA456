@@ -34,7 +34,7 @@ uint8_t readReg(uint8_t reg, uint8_t len)
 	uint8_t senData = reg;
   twi_write(BMA_ADDRESS,&senData,1,NULL); //Send reg address
   twi_wait();
-  readLen = len;
+  readLen = len;//set the length for the read Data
   twi_read(BMA_ADDRESS,len,&saveReadData);
   twi_wait();
   return readBuffer[0];
@@ -146,36 +146,91 @@ uint8_t Bosch_BMA::getInternalState()
 {
 	return readReg(BMA4_INTERNAL_STAT, 1);
 }
-uint32_t Bosch_BMA::getSensortime()
-{
-  uint8_t data[3] = {0};
-  //BMA_I2C.readAddress(0x1A,3,data);
 
-  return ((uint32_t)data[2]) + ((uint32_t)data[1])*256 + ((uint32_t)data[0])*256*256;
-}
 void Bosch_BMA::getInternalConfig(uint8_t *data)
 {
-	const uint8_t len =64;//from Datasheet
-	uint8_t senData = BMA4_FEATURE_CONFIG_ADDR;
-	twi_write(BMA_ADDRESS,&senData,1,NULL); //Send reg address
-	twi_wait();
-	readLen = len;
-	twi_read(BMA_ADDRESS,len,&saveReadData);
-	for(uint8_t i = 0;i<len;++i)
-	{
-		data[i] = readBuffer[i];
-	}
-	twi_wait();
+  startInterruptConfig();
+  for(uint8_t i = 0;i<InterruptConfigLenght;++i)
+  {
+    data[i] = InterruptConfig[i];
+  }
 }
 void Bosch_BMA::writeInternalConfig(uint8_t *data)
 {
-	const uint8_t len =64;//from Datasheet
-	uint8_t sendData[len+1];
+  for(uint8_t i = 0;i<InterruptConfigLenght;++i)
+  {
+    InterruptConfig[i] = data[i];
+  }
+}
+void Bosch_BMA::startInterruptConfig()
+{
+  uint8_t senData = BMA4_FEATURE_CONFIG_ADDR;
+  twi_write(BMA_ADDRESS,&senData,1,NULL); //Send reg address
+  twi_wait();
+  readLen = InterruptConfigLenght;//set the length for the read Data
+  twi_read(BMA_ADDRESS,InterruptConfigLenght,&saveReadData);
+  twi_wait();
+  for(uint8_t i = 0;i<InterruptConfigLenght;++i)
+  {
+    InterruptConfig[i] = readBuffer[i];
+  }
+}
+
+void Bosch_BMA::writeInterruptConfig()
+{
+	uint8_t sendData[InterruptConfigLenght+1];
 	sendData[0] = BMA4_FEATURE_CONFIG_ADDR;
-	for(uint8_t i = 0;i<len;++i)
+	for(uint8_t i = 0;i<InterruptConfigLenght;++i)
 	{
-		sendData[i+1] = data[i];
+		sendData[i+1] = InterruptConfig[i];
 	}
-	twi_write(BMA_ADDRESS,sendData,len+1,NULL); //send Data
+	twi_write(BMA_ADDRESS,sendData,InterruptConfigLenght+1,NULL); //send Data
 	twi_wait();
+}
+
+void Bosch_BMA::setMotionDetection(uint16_t threshhold, uint8_t delay, uint8_t axis, uint8_t nomotion)
+{
+	InterruptConfig[0] = threshhold&0xFF;
+	InterruptConfig[1] = (threshhold >> 8 )&0x07;
+	if(nomotion > 0) InterruptConfig[1] |= 0x08;
+	InterruptConfig[2] = delay & 0xFF;
+	InterruptConfig[3] = (delay >> 8) & 0x1F;
+	InterruptConfig[3] |= axis << 5;
+	//intConf[0] = 0x10;//7mg threshhold
+	//intConf[1] = 0x00;//select anymotion
+	//intConf[2] = 0x05;//duration 100ms
+	//intConf[3] = 0x80;//enable for all axis
+}
+void Bosch_BMA::setTapDetection(uint8_t singleTap, uint8_t strength, uint8_t enable)
+{
+  InterruptConfig[0x38]=enable&0x01;
+  InterruptConfig[0x38]|=(strength&0x07)<<1;
+  InterruptConfig[0x38]|=(singleTap&0x01)<<4;
+}
+void Bosch_BMA::setWristTiltFunction(uint8_t enable)
+{
+  InterruptConfig[0x3A]=enable&0x01;
+}
+void Bosch_BMA::setConfigID(uint8_t confID)
+{
+  InterruptConfig[0x3C]=confID;
+}
+void Bosch_BMA::setAxisMapping(uint8_t x, uint8_t x_invert, uint8_t y, uint8_t y_invert, uint8_t z, uint8_t z_invert)
+{
+  //map_x_axis = 0
+  //map_x_axis_sign = 1
+  //map_y_axis = 1
+  //map_y_axis_sign = 0
+  //map_z_axis = 2
+  //map_z_axis_sign = 1
+  //                        sz  z sy  y sx  x
+  //const uint16_t axisW =0b 1 10  1 01  1 00 //compiler doesnt support bit defines :-(
+  //0b 1 1010 1100 = 0x1AC
+  //const uint16_t axisW = 0x1AC;
+  InterruptConfig[0x3E] = x&0x03;
+  InterruptConfig[0x3E] |= (x_invert&0x01)<<2;
+  InterruptConfig[0x3E] = (y&0x03)<<3;
+  InterruptConfig[0x3E] |= (x_invert&0x01)<<5;
+  InterruptConfig[0x3E] = (z&0x03)<<6;
+  InterruptConfig[0x3F] = z_invert&0x01;
 }
