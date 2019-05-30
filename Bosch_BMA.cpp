@@ -3,7 +3,6 @@
 #include <string.h>
 #include <avr/pgmspace.h>
 #include <util/delay.h>
-#include "../BMA456/BMA456-Sensor-API/bma4_defs.h"
 
 //#define DEBUG_BMA
 
