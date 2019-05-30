@@ -11,7 +11,17 @@ class Bosch_BMA
   static const uint8_t InterruptConfigLenght =64;//from Datasheet
   uint8_t InterruptConfig[InterruptConfigLenght] ={0};
 public:
+  /*!
+     \brief read the value of a specific register directly from the device
+     \param addr Address of the Register to read
+     \returns the Value of this Register
+  */
   uint8_t readAddress(uint8_t addr);
+  /*!
+     \brief write a Value directly to a register of the device
+     \param addr Address of the Register to writeReg
+     \param value the Value which should be written to the register
+  */
   void writeAddress(uint8_t addr, uint8_t value);
 
   /*!
