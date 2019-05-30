@@ -583,14 +583,13 @@ uint8_t writeConfigFile()
 	const uint8_t chunkSize = 8;
   uint8_t config_stream_status = 0;
   uint16_t index = 0;
-  //rslt = bma4_set_advance_power_save(BMA4_DISABLE, dev);
-	writeReg(0x7C,0x00);
+
+	writeReg(BMA4_POWER_CONF_ADDR,0x00);
 
 	/* Wait for sensor time synchronization. Refer the data-sheet for
 	more information*/
 	_delay_ms(1);
 
-	//if (rslt == BMA4_OK) {
 		/* Disable config loading*/
 		writeReg(BMA4_INIT_CTRL_ADDR, 0);
 		/* Write the config stream */
@@ -603,7 +602,7 @@ uint8_t writeConfigFile()
 			}
 			stream_write((uint8_t*)(dataTemp), index, chunkSize);
 #ifdef DEBUG_BMA
-			_delay_ms(10);
+			_delay_ms(10);//To keep the slow logic analyzer from freaking out
 #endif /*DEBUG_BMA*/
 		}
 
@@ -612,48 +611,31 @@ uint8_t writeConfigFile()
 		/* Wait till ASIC is initialized. Refer the data-sheet for
 		more information*/
 		 _delay_ms(150);
+
 		/* Read the status of config stream operation */
-		//rslt |= bma4_read_regs(BMA4_INTERNAL_STAT, &config_stream_status, 1, dev);
     config_stream_status = readReg(BMA4_INTERNAL_STAT, 1);
 
-		//_delay_ms(500);
-
-		writeReg(0x7C,0x01);
-		//if (config_stream_status != BMA4_ASIC_INITIALIZED) {
-			//rslt |= BMA4_E_CONFIG_STREAM_ERROR;
-		//} else {
-			/* Enable advanced power save */
-		//	rslt |= bma4_set_advance_power_save(BMA4_ENABLE, dev);
-		//	rslt |= get_feature_config_start_addr(dev);
-		//}
+		writeReg(BMA4_POWER_CONF_ADDR,0x01);
     return config_stream_status;
 }
 void Bosch_BMA::init()
 {
-  //BMA_I2C.init(0x19<<1);
 
-  //_delay_us(500);
-  //writeReg(0x59,0x00);
-  //BMA_I2C.writeAddress(0x59, 0x00);//ini
-  //writeReg(0x7D,0x04);
-	writeReg(0x7E,0xB6);//soft reset
-	_delay_ms(1000);
-  //BMA_I2C.writeAddress(0x7D, 0x04);//start accel
-  //BMA_I2C.writeAddress(0x5E, FeaturesInConfig, 5);
+	writeReg(BMA4_CMD_ADDR,0xB6);//soft reset
+	_delay_ms(500);
+
   InterruptState = writeConfigFile();
-	//writeReg(0x7D,0x04);
-
 
 	//0x40 --> 0xAC
-	writeReg(0x40,0xAC);
+	writeReg(BMA4_ACCEL_CONFIG_ADDR,0xAC); //SamplingRate 1,6KHz, Averaging 4 Samples, Continous Filter
 	//0x41 --> 0x01
-	writeReg(0x41,0x01);
+	writeReg(BMA4_ACCEL_RANGE_ADDR,0x01); //Range +-4g
 
 	//read 0x7D
-	uint8_t temp7d = readAddress(0x7D);
+	uint8_t temp7d = readAddress(BMA4_POWER_CTRL_ADDR);
 	temp7d |= 0x04;
-	writeAddress(0x7D, temp7d);
-	writeReg(0x7C,0x00);
+	writeAddress(BMA4_POWER_CTRL_ADDR, temp7d);
+	writeReg(BMA4_POWER_CONF_ADDR,0x00);
 	//set 0x04
 	//writeback 0x7D
   //writeReg(0x59,0x01);
@@ -679,7 +661,7 @@ uint8_t Bosch_BMA::readAddress(uint8_t addr)
 
 uint8_t Bosch_BMA::getChipID()
 {
-  return readReg(0x00, 1);//BMA_I2C.readAddress(0x00);
+  return readReg(BMA4_CHIP_ID, 1);//BMA_I2C.readAddress(0x00);
 }
 uint8_t Bosch_BMA::getInternalState()
 {
