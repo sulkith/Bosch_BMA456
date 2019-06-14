@@ -162,6 +162,36 @@ void Bosch_BMA::writeInternalConfig(uint8_t *data)
     InterruptConfig[i] = data[i];
   }
 }
+int16_t Bosch_BMA::get_X_Accel()
+{
+  uint8_t senData = BMA4_X_AXIS;
+  twi_write(BMA_ADDRESS,&senData,1,NULL); //Send reg address
+  twi_wait();
+  readLen = InterruptConfigLenght;//set the length for the read Data
+  twi_read(BMA_ADDRESS,InterruptConfigLenght,&saveReadData);
+  twi_wait();
+  return (int16_t)((readBuffer[1])<<8|readBuffer[0]);
+}
+int16_t Bosch_BMA::get_Y_Accel()
+{
+  uint8_t senData = BMA4_Y_AXIS;
+  twi_write(BMA_ADDRESS,&senData,1,NULL); //Send reg address
+  twi_wait();
+  readLen = InterruptConfigLenght;//set the length for the read Data
+  twi_read(BMA_ADDRESS,InterruptConfigLenght,&saveReadData);
+  twi_wait();
+  return (int16_t)((readBuffer[1])<<8|readBuffer[0]);
+}
+int16_t Bosch_BMA::get_Z_Accel()
+{
+  uint8_t senData = BMA4_Z_AXIS;
+  twi_write(BMA_ADDRESS,&senData,1,NULL); //Send reg address
+  twi_wait();
+  readLen = InterruptConfigLenght;//set the length for the read Data
+  twi_read(BMA_ADDRESS,InterruptConfigLenght,&saveReadData);
+  twi_wait();
+  return (int16_t)((readBuffer[1])<<8|readBuffer[0]);
+}
 void Bosch_BMA::startInterruptConfig()
 {
   uint8_t senData = BMA4_FEATURE_CONFIG_ADDR;

@@ -35,7 +35,31 @@ public:
      \returns state of the Interrupt Engine
   */
   uint8_t getInternalState();
+  /*!
+     \brief read accelleration on X Axis
+     \returns accelleration on X Axis
+  */
+  int16_t get_X_Accel();
+  /*!
+     \brief read accelleration on Y Axis
+     \returns accelleration on Y Axis
+  */
+  int16_t get_Y_Accel();
+  /*!
+     \brief read accelleration on Z Axis
+     \returns accelleration on Z Axis
+  */
+  int16_t get_Z_Accel();
+  /*!
+     \brief get the whole internal Config data of the BMA
+     \param pointer to the Data. This Buffer has to be 64 Bytes
+  */
   void getInternalConfig(uint8_t *data);
+  /*!
+     \brief write the whole internal Config data of the BMA
+     \param pointer to the Data. This Buffer has to be 64 Bytes
+     \pre startInterruptConfig has to be called before.
+  */
   void writeInternalConfig(uint8_t *data);
   /*!
      \brief read the config of the Interrupt controller from the Device
