@@ -19,7 +19,7 @@ AVRDUDE = avrdude $(PROGRAMMER) -p $(DEVICE) -P $(PORT)
 COMPILE = avr-g++ -Wall -Os -DF_CPU=$(CLOCK) -mmcu=$(DEVICE)
 
 # symbolic targets:
-all:	main.hex
+all:	main.hex main_SPI.hex
 
 .c.o:
 	$(COMPILE) -c $< -o $@
@@ -50,11 +50,14 @@ load: all
 	bootloadHID main.hex
 
 clean:
-	rm -f main.hex main.elf $(OBJECTS)
+	rm -f main.hex main.elf main_SPI.elf main_SPI.hex $(OBJECTS) $(OBJECTS_TWI) $(OBJECTS_SPI)
 
 # file targets:
 main.elf: $(OBJECTS) $(OBJECTS_TWI)
 	$(COMPILE) -o main.elf $(OBJECTS) $(OBJECTS_TWI)
+
+main_SPI.elf: $(OBJECTS) $(OBJECTS_SPI)
+	$(COMPILE) -o main_SPI.elf $(OBJECTS) $(OBJECTS_SPI)
 
 main.hex: main.elf
 	rm -f main.hex
@@ -62,6 +65,10 @@ main.hex: main.elf
 	avr-size --format=avr --mcu=$(DEVICE) main.elf
 # If you have an EEPROM section, you must also create a hex file for the
 # EEPROM and add it to the "flash" target.
+main_SPI.hex: main_SPI.elf
+	rm -f main.hex
+	avr-objcopy -j .text -j .data -O ihex main_SPI.elf main_SPI.hex
+	avr-size --format=avr --mcu=$(DEVICE) main_SPI.elf
 
 # Targets for code debugging and analysis:
 disasm:	main.elf
