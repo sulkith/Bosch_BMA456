@@ -5,9 +5,9 @@ DEVICE      = atmega328p
 CLOCK      = 8000000
 #CLOCK      = 1000000
 PROGRAMMER = -c buspirate 
-OBJECTS     = main.o Bosch_BMA.o Bosch_BMA456_config_file.o
-OBJECTS_TWI = i2c_adap.o i2c/twi.o
-OBJECTS_SPI = spi_adap.o spi/spi.o
+OBJECTS     = Bosch_BMA.o Bosch_BMA456_config_file.o TestCode/TestCode.o
+OBJECTS_TWI = TestCode/main.o i2c_adap.o i2c/twi.o
+OBJECTS_SPI = TestCode/main_SPI.o spi_adap.o spi/spi.o
 PORT = /dev/ttyUSB0
 # for ATTiny85
 # see http://www.engbedded.com/fusecalc/
