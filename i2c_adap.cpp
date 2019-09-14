@@ -74,4 +74,5 @@ void stream_write(uint8_t * data, uint16_t index, uint8_t length)
   writeReg(BMA4_FEATURE_CONFIG_ADDR, data, length);
   return;
 }
-
+void initComDriver()
+{}

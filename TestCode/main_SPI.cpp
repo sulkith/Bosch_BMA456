@@ -1,8 +1,10 @@
 #include <stdint.h>
+#include <string.h>
 #include <util/delay.h>
 #include <avr/io.h>
 #include "TestCode.h"
 #include "../spi_adap.h"
+#include "../bus_adap.h"
 #include "../spi/spi.h"
 
 void setCS(uint8_t t){
@@ -33,44 +35,58 @@ unsigned char spi_tranceiver (unsigned char data)
 	while(!(SPSR & (1<<SPIF) ));       //Wait until transmission complete
 	return(SPDR);                      //Return received data
 }
-
+uint8_t readbuffer[10];
+void readData(uint8_t *data)
+{
+	for(uint8_t i=0;i<10;++i)
+	{
+		readbuffer[i]=data[i];
+	}
+}
+void ASSERT(uint8_t condition, uint8_t ID)
+{
+	if(!(condition))
+	{
+		showLEDs(0x0f&ID,0);
+		while(1);
+	}
+}
 int main(){
 	_delay_ms(500);
-	DDRD = 0xFF;
-	showLEDs(1,1);
-	DDRB |= _BV(PB2);
-	spi_init_master();
-
-	_delay_ms(1);//Toogle CSB Pin to get the BMA into SPI mode
-	setCS(1);
-	_delay_ms(1);
-	setCS(0);
-	_delay_ms(1);
-
-	setCS(1);
-	_delay_ms(1);
-	spi_tranceiver(0x80);
-	spi_tranceiver(0xFF);//Dummy Byte
-	uint8_t test = 0;
-	while((spi_tranceiver(0xFF))==0)
-	{
-		setCS(0);
-		_delay_ms(1);
-		setCS(1);
-		spi_tranceiver(0x80);
-		test ++;
-	}
-	showLEDs(test&0x0f,1);
-	if(test==0)
-	showLEDs(0x0f,2);
-	while(1);
 	showLEDs(2,1);
+
+	DDRD = 0xFF;
+
+	spi_init();
+
 	set_SPI_activate_CS(&setCS);
+
+	initComDriver();
+
+//	uint8_t test1 = readReg(0x00,1);
+//	showLEDs(0x0f&test1,2);
+
+	_delay_ms(1);
+
+	ASSERT(readReg(0x00,1)==0x16,1);
+	writeReg(0x73,0xAA);
+	ASSERT(readReg(0x73,1)==0xAA,2);
+	uint8_t writeArr[]{0xBB,0xCC};
+	writeReg(0x71,writeArr,2);
+	ASSERT(readReg(0x71,1)==0xBB,3);
+	ASSERT(readReg(0x72,1)==0xCC,4);
+
+	
 	showLEDs(3,1);
 	init_BMA();
+	uint8_t test3 = readReg(0x2A,1);
+	ASSERT(readReg(0x2A,1)==0x01,test3);
 	showLEDs(4,1);
 
+
+	showLEDs(8,1);
+
 	while(1){
-		if(test_BMA()!=0)showLEDs(15,1);
+		if((test_BMA())!=0)showLEDs(15,1);
 	}
 }

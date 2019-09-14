@@ -16,6 +16,7 @@ void set_SPI_activate_CS(void (*setCS)(uint8_t))
 //write to register
 void writeReg(uint8_t reg, uint8_t val)
 {
+  spi_start();
   uint8_t senData[2] = {reg,val};
   //Activate CS
   if(activateCS != NULL)activateCS(1);
@@ -23,9 +24,11 @@ void writeReg(uint8_t reg, uint8_t val)
   spi_wait();
   //DeActivate CS
   if(activateCS != NULL)activateCS(0);
+  spi_stop();
 }
 void writeReg(uint8_t reg, uint8_t *val, uint8_t len)
 {
+  spi_start();
   uint8_t senData[SPI_BUFFER_LENGTH];
   senData[0]= reg;
   //Activate CS
@@ -35,6 +38,7 @@ void writeReg(uint8_t reg, uint8_t *val, uint8_t len)
   spi_wait();
   //DeActivate CS
   if(activateCS != NULL)activateCS(0);
+  spi_stop();
   return;
 }
 //Callback funtion for reading more than one byte
@@ -42,35 +46,38 @@ void saveReadData(uint8_t *data)
 {
   for(uint8_t i = 0;i<readLen;++i)
   {
-    readBuffer[i] = data[i];
+    readBuffer[i] = data[i+1];
   }
   readLen = 0;
 }
 //Read register. Byte 0 is returned.
 uint8_t readReg(uint8_t reg, uint8_t len)
 {
-  uint8_t senData = reg;
+  spi_start();
+  uint8_t senData = 0x80|reg;//Set first bit to signalize read
   //Activate CS
   if(activateCS != NULL)activateCS(1);
   spi_write(&senData,1,NULL); //Send reg address
   spi_wait();
   readLen = len;//set the length for the read Data
-  spi_read(len,&saveReadData);
+  spi_read(len+1,&saveReadData);//Add the Dummy Byte
   spi_wait();
   //DeActivate CS
   if(activateCS != NULL)activateCS(0);
+  spi_stop();
   return readBuffer[0];
 }
 
 uint8_t readRegs(uint8_t reg, uint8_t len, uint8_t *buffer)
 {
-  uint8_t senData = reg;
+  spi_start();
+  uint8_t senData = 0x80|reg;//Set first bit to signalize read
   //Activate CS
   if(activateCS != NULL)activateCS(1);
   spi_write(&senData,1,NULL); //Send reg address
   spi_wait();
   readLen = len;//set the length for the read Data
-  spi_read(len,&saveReadData);
+  spi_read(len+1,&saveReadData);//Add the Dummy Byte
   spi_wait();
   if(activateCS != NULL)activateCS(0);
   //DeActivate CS
@@ -82,6 +89,7 @@ uint8_t readRegs(uint8_t reg, uint8_t len, uint8_t *buffer)
       buffer[i] = readBuffer[i];
     }
   }
+  spi_stop();
   return readBuffer[0];
 }
 void stream_write(uint8_t * data, uint16_t index, uint8_t length)
@@ -96,4 +104,11 @@ void stream_write(uint8_t * data, uint16_t index, uint8_t length)
   writeReg(BMA4_FEATURE_CONFIG_ADDR, data, length);
   return;
 }
-
+void initComDriver()
+{
+	_delay_ms(1);//Toogle CSB Pin to get the BMA into SPI mode
+	activateCS(1);
+	_delay_ms(1);
+	activateCS(0);
+	_delay_ms(1);
+}

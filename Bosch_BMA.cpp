@@ -53,6 +53,7 @@ uint8_t writeConfigFile()
 void Bosch_BMA::init()
 {
 
+	initComDriver();
 	writeReg(BMA4_CMD_ADDR,0xB6);//soft reset
 	_delay_ms(500);
 
