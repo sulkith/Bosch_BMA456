@@ -7,7 +7,8 @@
 
 //#define DEBUG_BMA
 
-extern const uint8_t PROGMEM bma456_config_file[];
+//extern const uint8_t PROGMEM bma456_config_file[];
+extern const uint8_t get_bma456_config_file(uint16_t i);
 
 uint8_t writeConfigFile()
 {
@@ -29,7 +30,7 @@ uint8_t writeConfigFile()
 		{
 			for(uint16_t i = 0; i<chunkSize; ++i)
 			{
-				chunkBuffer[i] = pgm_read_byte(&(bma456_config_file[index+i]));
+				chunkBuffer[i] = get_bma456_config_file(index+i);
 			}
 			stream_write(chunkBuffer, index, chunkSize);
 #ifdef DEBUG_BMA
