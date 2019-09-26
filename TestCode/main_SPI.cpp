@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <avr/pgmspace.h>
 #include <string.h>
 #include <util/delay.h>
 #include <avr/io.h>
@@ -6,6 +7,9 @@
 #include "../spi_adap.h"
 #include "../bus_adap.h"
 #include "../spi/spi.h"
+#include "../Bosch_BMA.h"
+
+extern const uint8_t PROGMEM bma456_config_file[];
 
 void setCS(uint8_t t){
 
@@ -29,7 +33,7 @@ void spi_init_master (void)
 	//Prescaler: Fosc/16, Enable Interrupts
 }
 //Function to send and receive data
-unsigned char spi_tranceiver (unsigned char data)
+unsigned char spi_tranceiver_ (unsigned char data)
 {
 	SPDR = data;                       //Load data into the buffer
 	while(!(SPSR & (1<<SPIF) ));       //Wait until transmission complete
@@ -51,11 +55,15 @@ void ASSERT(uint8_t condition, uint8_t ID)
 		while(1);
 	}
 }
+extern Bosch_BMA bma;
 int main(){
+	DDRD = 0xFF;
 	_delay_ms(500);
 	showLEDs(2,1);
+	_delay_ms(500);
 
-	DDRD = 0xFF;
+//	uint8_t test5 = pgm_read_byte(&(bma456_config_file[1]));
+//	ASSERT(1==2,0xF & test5);
 
 	spi_init();
 
@@ -73,16 +81,22 @@ int main(){
 	ASSERT(readReg(0x73,1)==0xAA,2);
 	uint8_t writeArr[]{0xBB,0xCC};
 	writeReg(0x71,writeArr,2);
+	_delay_ms(1);
 	ASSERT(readReg(0x71,1)==0xBB,3);
 	ASSERT(readReg(0x72,1)==0xCC,4);
 
 	
 	showLEDs(3,1);
 	init_BMA();
-	uint8_t test3 = readReg(0x2A,1);
-	ASSERT(readReg(0x2A,1)==0x01,test3);
-	showLEDs(4,1);
-
+	_delay_ms(1);
+	uint8_t test3 = bma.InterruptState;
+while(1)
+{
+	test3 |= bma.InterruptState;
+//	ASSERT(test3 == 0x01,test3);
+	showLEDs(test3,2);
+//	bma.init();
+}
 
 	showLEDs(8,1);
 

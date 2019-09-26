@@ -14,25 +14,24 @@ uint8_t writeConfigFile()
 	const uint8_t chunkSize = 16;
   uint8_t config_stream_status = 0;
   uint16_t index = 0;
-	uint8_t readBuffer[TWI_BUFFER_LENGTH] = {0};
+	uint8_t chunkBuffer[chunkSize+2] = {0};
 
 	writeReg(BMA4_POWER_CONF_ADDR,0x00);
 
 	/* Wait for sensor time synchronization. Refer the data-sheet for
 	more information*/
-	_delay_ms(1);
+	_delay_ms(10);
 
 		/* Disable config loading*/
 		writeReg(BMA4_INIT_CTRL_ADDR, 0);
 		/* Write the config stream */
 		for (index = 0; index < BMA4_CONFIG_STREAM_SIZE; index += chunkSize)
 		{
-			//misusing the readBuffer as send Buffer here
 			for(uint16_t i = 0; i<chunkSize; ++i)
 			{
-				readBuffer[i] = pgm_read_byte(&(bma456_config_file[index+i]));
+				chunkBuffer[i] = pgm_read_byte(&(bma456_config_file[index+i]));
 			}
-			stream_write((uint8_t*)(readBuffer), index, chunkSize);
+			stream_write(chunkBuffer, index, chunkSize);
 #ifdef DEBUG_BMA
 			_delay_ms(10);//To keep the slow logic analyzer from freaking out
 #endif /*DEBUG_BMA*/
@@ -56,8 +55,13 @@ void Bosch_BMA::init()
 	initComDriver();
 	writeReg(BMA4_CMD_ADDR,0xB6);//soft reset
 	_delay_ms(500);
+	initComDriver();
+	getChipID();//Test Code to see if the Bus is working in the Logic analyzer
+	getChipID();
+	getChipID();
 
   InterruptState = writeConfigFile();
+	getChipID();//Test Code to see if the Bus is working in the Logic analyzer
 
 	//0x40 --> 0xAC
 	writeReg(BMA4_ACCEL_CONFIG_ADDR,0xAC); //SamplingRate 1,6KHz, Averaging 4 Samples, Continous Filter
