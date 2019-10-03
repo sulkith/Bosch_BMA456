@@ -191,8 +191,8 @@ void Bosch_BMA::setAxisMapping(uint8_t x, uint8_t x_invert, uint8_t y, uint8_t y
   //const uint16_t axisW = 0x1AC;
   InterruptConfig[0x3E] = x&0x03;
   InterruptConfig[0x3E] |= (x_invert&0x01)<<2;
-  InterruptConfig[0x3E] = (y&0x03)<<3;
+  InterruptConfig[0x3E] |= (y&0x03)<<3;
   InterruptConfig[0x3E] |= (y_invert&0x01)<<5;
-  InterruptConfig[0x3E] = (z&0x03)<<6;
+  InterruptConfig[0x3E] |= (z&0x03)<<6;
   InterruptConfig[0x3F] = z_invert&0x01;
 }
