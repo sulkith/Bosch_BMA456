@@ -138,6 +138,12 @@ int16_t Bosch_BMA::get_Z_Accel()
   readRegs(BMA4_Z_AXIS,2,databuffer);
   return (int16_t)((databuffer[1])<<8|databuffer[0]);
 }
+uint32_t Bosch_BMA::getSteps()
+{
+  uint8_t databuffer[4];
+  readRegs(BMA4_STEP_COUNTER,4,databuffer);
+  return (uint32_t)(((uint32_t)databuffer[3])<<24|((uint32_t)databuffer[2])<<16|((uint32_t)databuffer[1])<<8|(uint32_t)databuffer[0]);
+}
 void Bosch_BMA::startInterruptConfig()
 {
   readRegs(BMA4_FEATURE_CONFIG_ADDR,InterruptConfigLenght,InterruptConfig);
@@ -148,6 +154,15 @@ void Bosch_BMA::writeInterruptConfig()
 {
   writeReg(BMA4_FEATURE_CONFIG_ADDR, InterruptConfig, InterruptConfigLenght);
   return;
+}
+
+void Bosch_BMA::resetSteps()
+{
+	startInterruptConfig();
+	InterruptConfig[0x37]=0x14;
+	writeInterruptConfig();
+	setStepCounter(1);
+	writeInterruptConfig();
 }
 
 void Bosch_BMA::setMotionDetection(uint16_t threshhold, uint8_t delay, uint8_t axis, uint8_t nomotion)
@@ -172,6 +187,13 @@ void Bosch_BMA::setTapDetection(uint8_t singleTap, uint8_t strength, uint8_t ena
 void Bosch_BMA::setWristTiltFunction(uint8_t enable)
 {
   InterruptConfig[0x3A]=enable&0x01;
+}
+void Bosch_BMA::setStepCounter(uint8_t enable)
+{
+	if((enable&0x01) > 0)
+  	InterruptConfig[0x37]=0x10;
+	else
+		InterruptConfig[0x37]=0x00;
 }
 void Bosch_BMA::setConfigID(uint8_t confID)
 {

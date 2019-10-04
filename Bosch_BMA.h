@@ -51,6 +51,15 @@ public:
   */
   int16_t get_Z_Accel();
   /*!
+     \brief read step Counter value
+     \returns step counter value
+  */
+  uint32_t getSteps();
+  /*!
+     \brief reset Step counter value
+  */
+  void resetSteps();
+  /*!
      \brief get the whole internal Config data of the BMA
      \param pointer to the Data. This Buffer has to be 64 Bytes
   */
@@ -97,6 +106,13 @@ public:
    \post writeInterruptConfig has to be called to write back the config
 */
   void setWristTiltFunction(uint8_t enable);
+  /*!
+     \brief setup the step counter
+     \param enable if 1 enables the Step counter
+     \pre startInterruptConfig has to be called before.
+     \post writeInterruptConfig has to be called to write back the config
+  */
+    void setStepCounter(uint8_t enable);
   /*!
      \brief set the config ID
      \param confID the configuration IDto write

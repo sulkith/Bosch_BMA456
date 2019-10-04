@@ -32,4 +32,6 @@
 #define BMA4_Y_AXIS 0x14
 #define BMA4_Z_AXIS 0x16
 
+#define BMA4_STEP_COUNTER 0x1E
+
 #endif /*__BOSCH_BMA456_DEFS_H__*/
