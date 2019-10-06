@@ -78,3 +78,6 @@ disasm:	main.elf
 
 cpp:
 	$(COMPILE) -E main.c
+
+doxy:
+	doxygen Doxyfile

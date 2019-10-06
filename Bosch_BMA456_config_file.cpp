@@ -383,6 +383,11 @@ volatile const uint8_t PROGMEM bma456_config_file[]  = {
 		0xd0, 0x5f, 0xb8, 0x2e, 0x80, 0x2e, 0x18, 0x00, 0x80, 0x2e, 0x18, 0x00
 };//*/
 
+  /*!
+     \brief get the Value from the Config file, this function has to be used, since the config file is in the flash and it is compressed
+     \param i index of the value to read
+     \returns the read value from the config file
+  */
 const uint8_t get_bma456_config_file(uint16_t i)
 {
 	if(i<4528)

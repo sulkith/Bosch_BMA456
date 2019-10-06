@@ -4,8 +4,11 @@
 #include <stdint.h>
 #include "Bosch_BMA456_defs.h"
 
-//only for testing
-
+/*!
+ * \brief a Class to use the Bosch BMA Sensor. Tested only for the BMA456.
+ * Please see also the Datasheet, because not everything is realized in the Driver.
+ * https://ae-bst.resource.bosch.com/media/_tech/media/datasheets/BST-BMA456-DS000.pdf
+ */
 class Bosch_BMA
 {
   static const uint8_t InterruptConfigLenght =64;//from Datasheet
@@ -88,12 +91,12 @@ public:
   void resetSteps();
   /*!
      \brief get the whole internal Config data of the BMA
-     \param pointer to the Data. This Buffer has to be 64 Bytes
+     \param data pointer to the Data. This Buffer has to be 64 Bytes
   */
   void getInternalConfig(uint8_t *data);
   /*!
      \brief write the whole internal Config data of the BMA
-     \param pointer to the Data. This Buffer has to be 64 Bytes
+     \param data pointer to the Data. This Buffer has to be 64 Bytes
      \pre startInterruptConfig has to be called before.
   */
   void writeInternalConfig(uint8_t *data);
