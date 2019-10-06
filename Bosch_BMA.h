@@ -10,6 +10,8 @@ class Bosch_BMA
 {
   static const uint8_t InterruptConfigLenght =64;//from Datasheet
   uint8_t InterruptConfig[InterruptConfigLenght] ={0};
+  uint8_t AxisMapping[6] = {BMA4_X_AXIS,0,BMA4_Y_AXIS,0,BMA4_Z_AXIS,0};
+  const uint8_t AxisRegister[3] = {BMA4_X_AXIS,BMA4_Y_AXIS,BMA4_Z_AXIS};
 public:
   /*!
      \brief read the value of a specific register directly from the device
@@ -50,6 +52,31 @@ public:
      \returns accelleration on Z Axis
   */
   int16_t get_Z_Accel();
+  /*!
+     \brief read accelleration on corrected X Axis
+     \pre setAxisMapping has to be called before.
+     \returns accelleration on X Axis
+  */
+  int16_t get_X_Accel_corr();
+  /*!
+     \brief read accelleration on corrected Y Axis
+     \pre setAxisMapping has to be called before.
+     \returns accelleration on Y Axis
+  */
+  int16_t get_Y_Accel_corr();
+  /*!
+     \brief read accelleration on corrected Axis specified by the argument
+     \param axis identified by Number: 1-x 2-y 3-z
+     \pre setAxisMapping has to be called before.
+     \returns accelleration on the specified Axis
+  */
+  int16_t get_Accel_corr(uint8_t axis);
+  /*!
+     \brief read accelleration on corrected Z Axis
+     \pre setAxisMapping has to be called before.
+     \returns accelleration on Z Axis
+  */
+  int16_t get_Z_Accel_corr();
   /*!
      \brief get the whole internal Config data of the BMA
      \param pointer to the Data. This Buffer has to be 64 Bytes

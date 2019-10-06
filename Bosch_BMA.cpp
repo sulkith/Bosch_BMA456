@@ -138,6 +138,27 @@ int16_t Bosch_BMA::get_Z_Accel()
   readRegs(BMA4_Z_AXIS,2,databuffer);
   return (int16_t)((databuffer[1])<<8|databuffer[0]);
 }
+int16_t Bosch_BMA::get_Accel_corr(uint8_t axis)
+{
+  uint8_t databuffer[2];
+  const uint8_t axis_index = ((axis-1)%3)*2;
+  readRegs(AxisMapping[axis_index],2,databuffer);
+  if(AxisMapping[axis_index+1]>0) 
+	  return -(int16_t)((databuffer[1])<<8|databuffer[0]);
+  return (int16_t)((databuffer[1])<<8|databuffer[0]);
+}
+int16_t Bosch_BMA::get_X_Accel_corr()
+{
+	return get_Accel_corr(1);
+}
+int16_t Bosch_BMA::get_Y_Accel_corr()
+{
+	return get_Accel_corr(2);
+}
+int16_t Bosch_BMA::get_Z_Accel_corr()
+{
+	return get_Accel_corr(3);
+}
 void Bosch_BMA::startInterruptConfig()
 {
   readRegs(BMA4_FEATURE_CONFIG_ADDR,InterruptConfigLenght,InterruptConfig);
@@ -195,4 +216,12 @@ void Bosch_BMA::setAxisMapping(uint8_t x, uint8_t x_invert, uint8_t y, uint8_t y
   InterruptConfig[0x3E] |= (y_invert&0x01)<<5;
   InterruptConfig[0x3E] |= (z&0x03)<<6;
   InterruptConfig[0x3F] = z_invert&0x01;
+
+  //Set The Registers for the corrected Axis Calls
+  AxisMapping[0] = AxisRegister[x&0x3];
+  AxisMapping[1] = x_invert;
+  AxisMapping[2] = AxisRegister[y&0x3];
+  AxisMapping[3] = y_invert;
+  AxisMapping[4] = AxisRegister[z&0x3];
+  AxisMapping[5] = z_invert;
 }
