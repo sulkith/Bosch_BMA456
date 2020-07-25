@@ -2,7 +2,14 @@
 #include "Bosch_BMA456_defs.h"
 #include "spi/spi.h"
 #include <string.h>
+#ifdef __AVR__
 #include <util/delay.h>
+#endif
+#ifdef __arm__
+#include "main.h"
+#define _delay_ms(x) HAL_Delay(x)
+extern void _delay_us(uint32_t);
+#endif
 
 uint16_t debugCntrTmp = 0;
 uint8_t readBuffer[SPI_BUFFER_LENGTH] = {0};
@@ -27,7 +34,7 @@ void writeReg(uint8_t reg, uint8_t val)
   spi_wait();
   //DeActivate CS
   if(activateCS != NULL)activateCS(0);
-  _delay_ms(1);
+  //_delay_ms(1);
 //  spi_stop();
 }
 void writeReg(uint8_t reg, uint8_t *val, uint8_t len)
@@ -41,7 +48,7 @@ void writeReg(uint8_t reg, uint8_t *val, uint8_t len)
   spi_wait();
   //DeActivate CS
   if(activateCS != NULL)activateCS(0);
-  _delay_ms(1);
+  //_delay_ms(1);
 //  spi_stop();
   return;
 }
@@ -68,7 +75,7 @@ uint8_t readReg(uint8_t reg, uint8_t len)
   spi_wait();
   //DeActivate CS
   if(activateCS != NULL)activateCS(0);
-  _delay_ms(1);
+  //_delay_ms(1);
 //  spi_stop();
   return readBuffer[0];
 }
@@ -107,9 +114,11 @@ void stream_write(uint8_t * data, uint16_t index, uint8_t length)
 	uint8_t asic_lsb = ((index / 2) & 0x0F);
 
 	writeReg(BMA4_RESERVED_REG_5B_ADDR, asic_lsb);
-	_delay_us(2);
+	//_delay_us(2);
+	//_delay_us(1);
   writeReg(BMA4_RESERVED_REG_5C_ADDR, asic_msb);
-	_delay_us(2);
+	//_delay_us(2);
+	//_delay_us(1);
 
   writeReg(BMA4_FEATURE_CONFIG_ADDR, data, length);
 //	activateCS = activateCS_temp;
