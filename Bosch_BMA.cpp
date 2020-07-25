@@ -1,8 +1,15 @@
 #include "Bosch_BMA.h"
 #include "i2c/twi.h"
 #include <string.h>
+#ifdef __AVR__
 #include <avr/pgmspace.h>
 #include <util/delay.h>
+#endif
+
+#ifdef __arm__
+#include "main.h"
+#define _delay_ms(x) HAL_Delay(x)
+#endif
 #include "bus_adap.h"
 
 //#define DEBUG_BMA
@@ -12,10 +19,10 @@ extern const uint8_t get_bma456_config_file(uint16_t i);
 
 uint8_t writeConfigFile()
 {
-	const uint8_t chunkSize = 16;
+	const uint8_t chunkSize = 128;
   uint8_t config_stream_status = 0;
   uint16_t index = 0;
-	uint8_t chunkBuffer[chunkSize+2] = {0};
+	uint8_t chunkBuffer[chunkSize+2] __attribute__ ((aligned (16))) = {0};
 
 	writeReg(BMA4_POWER_CONF_ADDR,0x00);
 
